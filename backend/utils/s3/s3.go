@@ -3,6 +3,7 @@ package s3
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"oneimg/backend/models"
 
@@ -19,15 +20,20 @@ func NewS3Client(setting models.Settings) (*s3.Client, error) {
 		bucket    string
 		accessKey string
 		secretKey string
-		region    = "auto" // R2使用auto区域
+		region    string
 	)
 	endpoint = setting.S3Endpoint
 	bucket = setting.S3Bucket
 	accessKey = setting.S3AccessKey
 	secretKey = setting.S3SecretKey
 
-	if setting.StorageType == "s3" {
-		region = "us-east-1"
+	region = strings.TrimSpace(setting.S3Region)
+	if region == "" {
+		if strings.EqualFold(setting.StorageType, "s3") {
+			region = "us-east-1"
+		} else {
+			region = "auto" // R2使用auto区域
+		}
 	}
 
 	if accessKey == "" || secretKey == "" {

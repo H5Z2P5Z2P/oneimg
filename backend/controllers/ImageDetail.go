@@ -6,6 +6,8 @@ import (
 
 	"oneimg/backend/database"
 	"oneimg/backend/models"
+	"oneimg/backend/utils/settings"
+	"oneimg/backend/utils/urlbuilder"
 
 	"github.com/gin-gonic/gin"
 )
@@ -41,6 +43,10 @@ func GetImageDetail(c *gin.Context) {
 			"msg":  "图片不存在",
 		})
 		return
+	}
+
+	if setting, err := settings.GetSettings(); err == nil {
+		urlbuilder.DecorateImageURLs(&image, setting)
 	}
 
 	c.JSON(http.StatusOK, gin.H{

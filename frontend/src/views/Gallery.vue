@@ -157,8 +157,13 @@ import errorImg from '@/assets/images/error.webp';
 import { ref, onMounted, computed, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 
+const isAbsoluteUrl = (value) => /^https?:\/\//i.test(value || '')
+
 const getFullUrl = (path) => {
   if (!path) return ''
+  if (isAbsoluteUrl(path)) {
+    return path
+  }
   if (typeof window !== 'undefined') {
     return window.location.origin + path
   }

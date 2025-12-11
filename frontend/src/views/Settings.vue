@@ -257,6 +257,23 @@
                                 </div>
                                 
                                 <div class="setting-group"> 
+                                    <label class="setting-label block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="s3_region">
+                                        S3 Region
+                                    </label>
+                                    <input 
+                                        id="s3_region"
+                                        v-model="systemSettings.s3_region"
+                                        type="text" 
+                                        class="setting-input w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary focus:border-primary dark:focus:ring-primary/70 dark:focus:border-primary/70 transition-colors outline-none"
+                                        placeholder="如：us-east-1 或 auto"
+                                        @blur="handleFieldBlur('s3_region', systemSettings.s3_region)"
+                                    />
+                                    <div class="mt-1 text-gray-500 dark:text-gray-400 text-xs">
+                                        AWS必须填写具体区域，Cloudflare R2可填写 auto
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-group"> 
                                     <label class="setting-label block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="S3Bucket">
                                         S3 Bucket
                                     </label>
@@ -268,6 +285,23 @@
                                         placeholder="存储桶名称"
                                         @blur="handleFieldBlur('s3_bucket', systemSettings.s3_bucket)"
                                     />
+                                </div>
+
+                                <div class="setting-group"> 
+                                    <label class="setting-label block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="file_access_domain">
+                                        访问域名
+                                    </label>
+                                    <input 
+                                        id="file_access_domain"
+                                        v-model="systemSettings.file_access_domain"
+                                        type="text" 
+                                        class="setting-input w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary focus:border-primary dark:focus:ring-primary/70 dark:focus:border-primary/70 transition-colors outline-none"
+                                        placeholder="例如：https://img.example.com"
+                                        @blur="handleFieldBlur('file_access_domain', systemSettings.file_access_domain)"
+                                    />
+                                    <div class="mt-1 text-gray-500 dark:text-gray-400 text-xs">
+                                        用于生成外部访问链接，需指向对象存储/CNAME域名
+                                    </div>
                                 </div>
                             </div>
 
@@ -546,6 +580,8 @@ const systemSettings = reactive({
     s3_access_key: '',
     s3_secret_key: '',
     s3_bucket: '',
+    s3_region: '',
+    file_access_domain: '',
     webdav_url: '',
     webdav_user: '',
     webdav_pass: '',

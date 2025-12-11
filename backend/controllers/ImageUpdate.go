@@ -2,6 +2,9 @@ package controllers
 
 import (
 	"log"
+	"strings"
+	"time"
+
 	"oneimg/backend/config"
 	"oneimg/backend/database"
 	"oneimg/backend/interfaces"
@@ -10,7 +13,7 @@ import (
 	"oneimg/backend/utils/settings"
 	"oneimg/backend/utils/telegram"
 	"oneimg/backend/utils/uploads"
-	"time"
+	"oneimg/backend/utils/urlbuilder"
 
 	"github.com/gin-gonic/gin"
 )
@@ -80,15 +83,26 @@ func UploadImages(c *gin.Context) {
 			db.DB.Create(&imageModel)
 		}
 
-		uploadResults = append(uploadResults, *fileResult)
+		publicURL := urlbuilder.BuildFileURL(fileResult.URL, setting)
+		publicThumbnail := urlbuilder.BuildFileURL(fileResult.ThumbnailURL, setting)
+
+		responseResult := *fileResult
+		responseResult.URL = publicURL
+		responseResult.ThumbnailURL = publicThumbnail
+		uploadResults = append(uploadResults, responseResult)
 
 		if setting.TGNotice {
+			notifyURL := publicURL
+			if notifyURL == "" || strings.HasPrefix(notifyURL, "/") {
+				notifyURL = c.Request.Host + fileResult.URL
+			}
+
 			placeholderData := telegram.PlaceholderData{
 				Username:    c.GetString("username"),
 				Date:        time.Now().Format("2006-01-02 15:04:05"),
 				Filename:    fileResult.FileName,
 				StorageType: setting.StorageType,
-				URL:         c.Request.Host + fileResult.URL,
+				URL:         notifyURL,
 			}
 
 			err := telegram.SendSimpleMsg(

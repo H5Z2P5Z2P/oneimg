@@ -6,6 +6,8 @@ import (
 
 	"oneimg/backend/database"
 	"oneimg/backend/models"
+	"oneimg/backend/utils/settings"
+	"oneimg/backend/utils/urlbuilder"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -85,6 +87,10 @@ func GetDashboardStats(c *gin.Context) {
 
 	// 获取大小分布
 	stats.SizeDistribution = getSizeDistribution(db)
+
+	if setting, err := settings.GetSettings(); err == nil {
+		urlbuilder.DecorateImagesURLs(stats.RecentImages, setting)
+	}
 
 	c.JSON(http.StatusOK, StatsResponse{
 		Code:    200,

@@ -35,10 +35,12 @@ type Settings struct {
 	StoragePath string `gorm:"column:storage_path;default:'./uploads'" json:"storage_path"` // 本地存储路径（默认./uploads）
 
 	// S3配置（兼容S3协议的对象存储）
-	S3Endpoint  string `gorm:"column:s3_endpoint;default:''" json:"s3_endpoint"`
-	S3AccessKey string `gorm:"column:s3_access_key;default:''" json:"s3_access_key"`
-	S3SecretKey string `gorm:"column:s3_secret_key;default:''" json:"s3_secret_key"`
-	S3Bucket    string `gorm:"column:s3_bucket;default:''" json:"s3_bucket"`
+	S3Endpoint       string `gorm:"column:s3_endpoint;default:''" json:"s3_endpoint"`
+	S3AccessKey      string `gorm:"column:s3_access_key;default:''" json:"s3_access_key"`
+	S3SecretKey      string `gorm:"column:s3_secret_key;default:''" json:"s3_secret_key"`
+	S3Bucket         string `gorm:"column:s3_bucket;default:''" json:"s3_bucket"`
+	S3Region         string `gorm:"column:s3_region;default:''" json:"s3_region"`
+	FileAccessDomain string `gorm:"column:file_access_domain;default:''" json:"file_access_domain"`
 
 	// WebDAV配置
 	WebdavURL  string `gorm:"column:webdav_url;default:''" json:"webdav_url"`
@@ -84,11 +86,15 @@ func (s *Settings) IsValidStorageConfig() bool {
 	switch s.GetEffectiveStorageType() {
 	case "default":
 		return true // 本地存储无需额外配置（路径有默认值）
-	case "s3":
-		return strings.TrimSpace(s.S3Endpoint) != "" &&
+	case "s3", "r2":
+		valid := strings.TrimSpace(s.S3Endpoint) != "" &&
 			strings.TrimSpace(s.S3AccessKey) != "" &&
 			strings.TrimSpace(s.S3SecretKey) != "" &&
 			strings.TrimSpace(s.S3Bucket) != ""
+		if s.GetEffectiveStorageType() == "s3" {
+			valid = valid && strings.TrimSpace(s.S3Region) != ""
+		}
+		return valid
 	case "webdav":
 		return strings.TrimSpace(s.WebdavURL) != "" &&
 			strings.TrimSpace(s.WebdavUser) != "" &&

@@ -10,9 +10,9 @@
         </h2>
 
         <!-- 拖拽上传区域 -->
-        <div 
+        <div
           class="upload-area relative rounded-xl border-2 border-dashed transition-all duration-300 cursor-pointer overflow-hidden"
-          :class="{ 
+          :class="{
             'border-primary/30 bg-primary/5 dark:bg-primary/5': isDragOver,
             'border-light-300 dark:border-dark-100 bg-light-50 dark:bg-dark-200/50': !isDragOver && !isUploading,
             'border-primary/50 bg-primary/10 dark:bg-primary/10': isUploading
@@ -44,7 +44,7 @@
             <div class="spinner w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-3"></div>
             <p class="text-secondary text-sm mb-3">正在上传 {{ uploadingCount }} 个文件（{{ Math.round(uploadProgress) }}%）</p>
             <div class="progress-bar w-full max-w-md mx-auto h-2 bg-light-200 dark:bg-dark-100 rounded-full overflow-hidden">
-              <div 
+              <div
                 class="progress-fill h-full bg-primary transition-all duration-300 ease-out"
                 :style="{ width: uploadProgress + '%' }"
               ></div>
@@ -53,7 +53,7 @@
         </div>
 
         <!-- 隐藏的文件输入 -->
-        <input 
+        <input
           ref="fileInput"
           type="file"
           multiple
@@ -76,8 +76,8 @@
 
       <!-- 图片网格 -->
       <div v-if="recentImages.length > 0" class="recent-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-        <div 
-          v-for="image in recentImages" 
+        <div
+          v-for="image in recentImages"
           :key="image.id"
           class="recent-item rounded-lg bg-light-100 dark:bg-dark-100 transition-all duration-300 hover:shadow-md dark:hover:shadow-dark-md group relative"
         >
@@ -88,9 +88,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             </div>
-            <img 
+            <img
               :src="getFullUrl(image.thumbnail || image.url)"
-              :alt="image.filename || '图片预览'" 
+              :alt="image.filename || '图片预览'"
               class="recent-image w-full h-full object-cover transition-all duration-500 group-hover:scale-110 opacity-0"
               loading="lazy"
               @load="(e) => {
@@ -107,7 +107,7 @@
               <div class="flex gap-1">
                 <!-- 复制菜单：简化逻辑，确保显示 -->
                 <div class="relative z-50">
-                  <button 
+                  <button
                     class="w-6 h-6 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-colors duration-200"
                     title="复制链接"
                     @click.stop="toggleCardCopyMenu(image.id)"
@@ -115,7 +115,7 @@
                     <i class="ri-file-copy-line text-xs"></i>
                   </button>
                   <!-- 复制下拉框：强制显示层级 -->
-                  <div 
+                  <div
                     class="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg z-60 transition-all duration-200"
                     :class="{
                       'dark:bg-dark-200 dark:shadow-dark-xl': true,
@@ -124,21 +124,21 @@
                     }"
                   >
                     <div class="p-1">
-                      <button 
+                      <button
                         @click.stop="copyImageLink(image, 'url')"
                         class="w-full text-left px-2 py-1.5 text-xs text-gray-800 dark:text-light-100 hover:bg-light-100 dark:hover:bg-dark-300 rounded transition-colors duration-200 flex items-center gap-2"
                       >
                         <i class="ri-link text-xs w-4 text-center"></i>
                         URL
                       </button>
-                      <button 
+                      <button
                         @click.stop="copyImageLink(image, 'html')"
                         class="w-full text-left px-2 py-1.5 text-xs text-gray-800 dark:text-light-100 hover:bg-light-100 dark:hover:bg-dark-300 rounded transition-colors duration-200 flex items-center gap-2"
                       >
                         <i class="ri-code-fill text-xs w-4 text-center"></i>
                         HTML
                       </button>
-                      <button 
+                      <button
                         @click.stop="copyImageLink(image, 'markdown')"
                         class="w-full text-left px-2 py-1.5 text-xs text-gray-800 dark:text-light-100 hover:bg-light-100 dark:hover:bg-dark-300 rounded transition-colors duration-200 flex items-center gap-2"
                       >
@@ -149,7 +149,7 @@
                   </div>
                 </div>
                 <!-- 下载按钮 -->
-                <button 
+                <button
                   @click.stop="downloadImage(image)"
                   class="w-6 h-6 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-colors duration-200"
                   title="下载图片"
@@ -157,7 +157,7 @@
                   <i class="ri-download-fill text-xs"></i>
                 </button>
                 <!-- 删除按钮 -->
-                <button 
+                <button
                   @click.stop="deleteImage(image.id)"
                   class="w-6 h-6 rounded-full bg-danger/30 hover:bg-danger/50 text-white flex items-center justify-center transition-colors duration-200"
                   title="删除图片"
@@ -185,9 +185,15 @@
 import errorImg from '@/assets/images/error.webp';
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 
-// 获取完整URL的函数
+
+// 核心：获取完整URL的函数
+const isAbsoluteUrl = (value) => /^https?:\/\//i.test(value || '')
+
 const getFullUrl = (path) => {
   if (!path) return ''
+  if (isAbsoluteUrl(path)) {
+    return path
+  }
   if (typeof window !== 'undefined') {
     return window.location.origin + path
   }
@@ -254,10 +260,10 @@ const handleDragLeave = (e) => {
 const handleDrop = (e) => {
   e.preventDefault()
   isDragOver.value = false
-  
+
   const files = Array.from(e.dataTransfer.files)
   const imageFiles = files.filter(file => file.type.startsWith('image/'))
-  
+
   if (imageFiles.length > 0) {
     uploadFiles(imageFiles)
   } else {
@@ -288,7 +294,7 @@ const handleFileSelect = (e) => {
 const handlePaste = async (e) => {
   const items = e.clipboardData.items
   const imageFiles = []
-  
+
   for (let item of items) {
     if (item.type.startsWith('image/')) {
       const file = item.getAsFile()
@@ -302,7 +308,7 @@ const handlePaste = async (e) => {
       }
     }
   }
-  
+
   if (imageFiles.length > 0) {
     e.preventDefault()
     uploadFiles(imageFiles)
@@ -316,23 +322,23 @@ const handlePaste = async (e) => {
 // 文件上传
 const uploadFiles = async (files) => {
   if (isUploading.value) return
-  
+
   isUploading.value = true
   uploadingCount.value = files.length
   uploadProgress.value = 0
-  
+
   const formData = new FormData()
   files.forEach(file => {
     formData.append('images[]', file)
   })
-  
+
   try {
     const progressInterval = setInterval(() => {
       if (uploadProgress.value < 95) {
         uploadProgress.value += Math.random() * 5
       }
     }, 150)
-    
+
     const response = await fetch('/api/upload/images', {
       method: 'POST',
       headers: {
@@ -340,12 +346,12 @@ const uploadFiles = async (files) => {
       },
       body: formData
     })
-    
+
     clearInterval(progressInterval)
     uploadProgress.value = 100
-    
+
     const result = await response.json()
-    
+
     if (response.ok && result.code === 200) {
       await loadRecentImages()
       Message.success(`上传成功`, {
@@ -377,7 +383,7 @@ const loadRecentImages = async () => {
         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
       }
     })
-    
+
     if (response.ok) {
       const result = await response.json()
       recentImages.value = Array.isArray(result.data?.images) ? result.data.images : []
@@ -398,7 +404,7 @@ const copyImageLink = async (image, type) => {
   if (!image) return
   const fullUrl = getFullUrl(image.url)
   let copyText = ''
-  
+
   switch (type) {
     case 'url':
       copyText = fullUrl
@@ -412,7 +418,7 @@ const copyImageLink = async (image, type) => {
     default:
       copyText = fullUrl
   }
-  
+
   try {
     await navigator.clipboard.writeText(copyText)
     Message.success(`已复制${getTypeText(type)}格式`, {
@@ -496,7 +502,7 @@ const deleteImage = async (imageId) => {
   modal.open()
 }
 
-const deleteAsync = async (imageId) => { 
+const deleteAsync = async (imageId) => {
   const loading = Loading.show({
     text: '删除中...',
     color: '#ff4d4f',
@@ -510,7 +516,7 @@ const deleteAsync = async (imageId) => {
         'Content-Type': 'application/json'
       }
     })
-    
+
     if (response.ok) {
       Message.success('图片删除成功', {
         duration: 1500,
@@ -559,10 +565,10 @@ const previewImage = (image) => {
     })
     return
   }
-  
+
   currentPreviewImage = image
   previewCopyMenu = false // 重置复制菜单状态
-  
+
   // 构建预览弹窗内容
   const previewContent = `
     <div class="image-preview-popup w-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden bg-white dark:bg-dark-200">
@@ -572,7 +578,7 @@ const previewImage = (image) => {
         <div class="flex gap-1">
           <!-- 多格式复制菜单 -->
           <div class="relative z-100">
-            <button 
+            <button
               class="px-3 py-1.5 text-xs bg-primary/10 hover:bg-primary/20 whitespace-nowrap text-primary rounded-md transition-colors duration-200 flex items-center gap-1"
               onclick="event.stopPropagation(); window.togglePreviewCopyMenu()"
             >
@@ -581,26 +587,26 @@ const previewImage = (image) => {
               <i class="ri-arrow-down-s-line text-[10px] ml-0.5" id="copyMenuIcon"></i>
             </button>
             <!-- 复制下拉框 -->
-            <div 
+            <div
               class="absolute right-0 mt-1 w-36 bg-white dark:bg-dark-200 rounded-md shadow-xl z-101 transition-all duration-200 hidden opacity-0 translate-y-[-5px] z-[999]"
               id="previewCopyDropdown"
             >
               <div class="p-1">
-                <button 
+                <button
                   class="w-full text-left px-3 py-2 text-xs text-gray-800 dark:text-light-100 hover:bg-light-100 dark:hover:bg-dark-300 rounded transition-colors duration-200 flex items-center gap-2"
                   onclick="event.stopPropagation(); window.copyPreviewImageLink('url')"
                 >
                   <i class="ri-link text-xs w-4 text-center"></i>
                   URL
                 </button>
-                <button 
+                <button
                   class="w-full text-left px-3 py-2 text-xs text-gray-800 dark:text-light-100 hover:bg-light-100 dark:hover:bg-dark-300 rounded transition-colors duration-200 flex items-center gap-2"
                   onclick="event.stopPropagation(); window.copyPreviewImageLink('html')"
                 >
                   <i class="ri-code-fill text-xs w-4 text-center"></i>
                   HTML
                 </button>
-                <button 
+                <button
                   class="w-full text-left px-3 py-2 text-xs text-gray-800 dark:text-light-100 hover:bg-light-100 dark:hover:bg-dark-300 rounded transition-colors duration-200 flex items-center gap-2"
                   onclick="event.stopPropagation(); window.copyPreviewImageLink('markdown')"
                 >
@@ -611,7 +617,7 @@ const previewImage = (image) => {
             </div>
           </div>
           <!-- 下载按钮 -->
-          <button 
+          <button
             class="px-3 py-1.5 text-xs bg-light-100 dark:bg-dark-300 hover:bg-light-200 whitespace-nowrap dark:hover:bg-dark-400 text-secondary rounded-md transition-colors duration-200 flex items-center gap-1"
             onclick="event.stopPropagation(); window.downloadPreviewImage()"
           >
@@ -619,7 +625,7 @@ const previewImage = (image) => {
             下载
           </button>
           <!-- 删除按钮 -->
-          <button 
+          <button
             class="px-3 py-1.5 text-xs bg-danger/10 hover:bg-danger/20 whitespace-nowrap text-danger rounded-md transition-colors duration-200 flex items-center gap-1"
             onclick="event.stopPropagation(); window.deletePreviewImage()"
           >
@@ -628,12 +634,12 @@ const previewImage = (image) => {
           </button>
         </div>
       </div>
-      
+
       <!-- 预览图片区域 -->
       <div class="max-h-[360px] flex-1 overflow-auto flex items-center justify-center">
-        <a 
-            class="spotlight min-w-full max-w-full min-h-[260px] block" 
-            href="${getFullUrl(image.url)}" 
+        <a
+            class="spotlight min-w-full max-w-full min-h-[260px] block"
+            href="${getFullUrl(image.url)}"
             data-description="尺寸: ${image.width || '未知'}×${image.height || '未知'} | 大小: ${formatFileSize(image.file_size || 0)} | 上传日期：${formatDate(image.created_at)}"
         >
             <div class="relative max-w-full w-fill max-h-[360px] min-h-[260px] rounded-lg overflow-hidden bg-slate-100 animate-pulse flex items-center justify-center">
@@ -642,9 +648,9 @@ const previewImage = (image) => {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                 </div>
-                <img 
+                <img
                     src="${getFullUrl(image.url)}"
-                    alt="${image.filename}" 
+                    alt="${image.filename}"
                     class="max-w-full w-fill max-h-[360px] min-h-[260px] object-contain rounded-lg relative z-10 opacity-0 transition-opacity duration-300"
                     onload="this.classList.remove('opacity-0'); this.parentElement.classList.remove('animate-pulse')"
                     onerror="this.parentElement.classList.remove('animate-pulse'); this.classList.remove('opacity-0'); this.src='${errorImg}';"
@@ -652,7 +658,7 @@ const previewImage = (image) => {
             </div>
         </a>
       </div>
-      
+
       <!-- 底部信息栏 -->
       <div class="pt-2 flex flex-wrap gap-2 text-xs text-secondary">
         <div class="flex items-center gap-1.5">

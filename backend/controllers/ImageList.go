@@ -7,6 +7,8 @@ import (
 	"oneimg/backend/database"
 	"oneimg/backend/models"
 	"oneimg/backend/utils/result"
+	"oneimg/backend/utils/settings"
+	"oneimg/backend/utils/urlbuilder"
 
 	"github.com/gin-gonic/gin"
 )
@@ -109,6 +111,11 @@ func GetImageList(c *gin.Context) {
 			"msg":  "获取图片列表失败",
 		})
 		return
+	}
+
+	// 处理访问URL
+	if setting, err := settings.GetSettings(); err == nil {
+		urlbuilder.DecorateImagesURLs(images, setting)
 	}
 
 	// 计算总页数
